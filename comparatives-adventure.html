@@ -1,0 +1,1461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Comparative Adventure!</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet">
+<style>
+/* ─── Reset & Root ─────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --l1: #FF6B6B; --l1d: #CC4444; --l1bg: #FFF0F0; --l1t: #7A0000;
+  --l2: #FF9F43; --l2d: #CC7A1A; --l2bg: #FFF8EC; --l2t: #6B3800;
+  --l3: #1DD1A1; --l3d: #0F9E79; --l3bg: #E8FAF5; --l3t: #004D38;
+  --l4: #5F27CD; --l4d: #3E18A0; --l4bg: #F0EBFF; --l4t: #2B0D6E;
+  --sky: #74B9FF;
+  --dark: #1E1E2E;
+  --mid: #4A4A6A;
+  --light: #8888AA;
+  --paper: #FFFEF9;
+  --border: #E8E8F0;
+  --radius: 22px;
+  --radius-sm: 12px;
+  --shadow: 0 6px 0;
+  --shadow-sm: 0 3px 0;
+  --accent: #FF6B6B;
+  --accent-d: #CC4444;
+}
+
+body {
+  font-family: 'Nunito', sans-serif;
+  background: #EEF2FF;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  overflow-x: hidden;
+  background-image:
+    radial-gradient(ellipse at 0% 0%, rgba(116,185,255,0.2) 0%, transparent 50%),
+    radial-gradient(ellipse at 100% 100%, rgba(95,39,205,0.12) 0%, transparent 50%);
+}
+
+/* ─── Screen System ─────────────────────────────────────────── */
+.screen {
+  display: none;
+  width: 100%;
+  max-width: 700px;
+  animation: fadeUp 0.45s cubic-bezier(.22,.68,0,1.2) both;
+}
+.screen.active { display: block; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(28px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; } to { opacity: 1; }
+}
+@keyframes bounceIn {
+  0%   { transform: scale(0.6); opacity: 0; }
+  60%  { transform: scale(1.08); opacity: 1; }
+  80%  { transform: scale(0.97); }
+  100% { transform: scale(1); }
+}
+@keyframes shake {
+  0%,100% { transform: translateX(0); }
+  20%  { transform: translateX(-10px); }
+  40%  { transform: translateX(10px); }
+  60%  { transform: translateX(-7px); }
+  80%  { transform: translateX(7px); }
+}
+@keyframes pop {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.12); }
+  100% { transform: scale(1); }
+}
+@keyframes starFloat {
+  0%   { transform: translateY(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(-80px) rotate(360deg); opacity: 0; }
+}
+@keyframes pulse {
+  0%,100% { transform: scale(1); }
+  50% { transform: scale(1.04); }
+}
+
+/* ─── Card wrapper shared by all screens ─────────────────────── */
+.card {
+  background: var(--paper);
+  border-radius: var(--radius);
+  padding: 36px 32px;
+  box-shadow: 0 8px 40px rgba(30,30,80,0.1), 0 2px 8px rgba(30,30,80,0.06);
+  position: relative;
+  overflow: hidden;
+}
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 7px;
+  background: linear-gradient(90deg, #FF6B6B, #FF9F43, #1DD1A1, #5F27CD, #74B9FF);
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+
+/* ─── HOME SCREEN ─────────────────────────────────────────────── */
+#home { text-align: center; }
+
+.home-mascot { font-size: 5rem; margin-bottom: 8px; animation: pulse 2.5s ease-in-out infinite; display: block; line-height: 1; }
+.home-title {
+  font-family: 'Fredoka One', cursive;
+  font-size: clamp(2.2rem, 6vw, 3.4rem);
+  color: var(--dark);
+  line-height: 1.1;
+  margin-bottom: 6px;
+  text-shadow: 3px 3px 0 rgba(116,185,255,0.35);
+}
+.home-sub {
+  font-size: 1.05rem;
+  color: var(--mid);
+  font-weight: 700;
+  margin-bottom: 32px;
+}
+
+.level-preview {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 30px;
+}
+.level-chip {
+  border-radius: 14px;
+  padding: 12px 10px;
+  font-size: 0.82rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.level-chip span { font-size: 1.25rem; flex-shrink: 0; }
+.lc1 { background: var(--l1bg); color: var(--l1t); }
+.lc2 { background: var(--l2bg); color: var(--l2t); }
+.lc3 { background: var(--l3bg); color: var(--l3t); }
+.lc4 { background: var(--l4bg); color: var(--l4t); }
+
+.btn-row { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+
+.btn {
+  font-family: 'Nunito', sans-serif;
+  font-weight: 800;
+  font-size: 1.05rem;
+  padding: 14px 28px;
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.btn:hover  { transform: translateY(-3px); }
+.btn:active { transform: translateY(2px); }
+
+.btn-start {
+  background: var(--l1);
+  color: white;
+  box-shadow: var(--shadow) var(--l1d);
+}
+.btn-start:hover { box-shadow: 0 8px 0 var(--l1d); }
+
+.btn-rules {
+  background: var(--paper);
+  color: var(--mid);
+  border: 2.5px solid var(--border);
+  box-shadow: var(--shadow-sm) #D0D0E0;
+}
+.btn-rules:hover { box-shadow: 0 5px 0 #D0D0E0; }
+
+.btn-back {
+  background: transparent;
+  color: var(--light);
+  border: 2px solid var(--border);
+  box-shadow: none;
+  font-size: 0.92rem;
+  padding: 10px 18px;
+}
+.btn-back:hover { color: var(--mid); background: var(--border); transform: translateY(0); }
+
+.btn-next {
+  background: var(--l4);
+  color: white;
+  box-shadow: var(--shadow) var(--l4d);
+  font-size: 1.1rem;
+  padding: 16px 36px;
+}
+.btn-next:hover { box-shadow: 0 8px 0 var(--l4d); }
+
+.btn-replay {
+  background: var(--l1);
+  color: white;
+  box-shadow: var(--shadow) var(--l1d);
+  font-size: 1.05rem;
+  padding: 14px 28px;
+}
+
+/* ─── RULES SCREEN ─────────────────────────────────────────────── */
+#rules h2 {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.9rem;
+  color: var(--dark);
+  margin-bottom: 22px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.rule-block {
+  border-radius: 16px;
+  padding: 16px 18px;
+  margin-bottom: 14px;
+  border-left: 5px solid;
+}
+.rule-block h3 {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  font-weight: 900;
+  margin-bottom: 6px;
+}
+.rule-block p { font-size: 0.97rem; font-weight: 700; color: var(--dark); margin-bottom: 6px; }
+.rule-examples {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+.ex-pill {
+  font-size: 0.8rem;
+  font-weight: 800;
+  padding: 4px 12px;
+  border-radius: 20px;
+}
+
+.rb1 { background: var(--l1bg); border-color: var(--l1); color: var(--l1t); }
+.rb1 .ex-pill { background: var(--l1); color: white; }
+.rb2 { background: var(--l2bg); border-color: var(--l2); color: var(--l2t); }
+.rb2 .ex-pill { background: var(--l2); color: white; }
+.rb3 { background: var(--l3bg); border-color: var(--l3); color: var(--l3t); }
+.rb3 .ex-pill { background: var(--l3); color: white; }
+.rb4 { background: var(--l4bg); border-color: var(--l4); color: var(--l4t); }
+.rb4 .ex-pill { background: var(--l4); color: white; }
+
+.rules-footer { margin-top: 20px; display: flex; justify-content: center; }
+
+/* ─── LEVEL INTRO SCREEN ─────────────────────────────────────── */
+#level-intro { text-align: center; }
+.level-intro-badge {
+  display: inline-block;
+  font-family: 'Fredoka One', cursive;
+  font-size: 0.95rem;
+  letter-spacing: 2px;
+  padding: 6px 18px;
+  border-radius: 20px;
+  margin-bottom: 18px;
+  text-transform: uppercase;
+}
+.level-intro-icon { font-size: 5rem; display: block; margin-bottom: 14px; animation: bounceIn 0.6s ease; }
+.level-intro-title {
+  font-family: 'Fredoka One', cursive;
+  font-size: clamp(1.8rem, 5vw, 2.5rem);
+  color: var(--dark);
+  margin-bottom: 10px;
+}
+.level-intro-desc {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--mid);
+  margin-bottom: 24px;
+  line-height: 1.6;
+  max-width: 440px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.level-examples-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 28px;
+}
+.level-ex-tag {
+  font-size: 0.88rem;
+  font-weight: 800;
+  padding: 6px 16px;
+  border-radius: 20px;
+}
+
+/* ─── GAME SCREEN ─────────────────────────────────────────────── */
+#game .progress-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.level-tag {
+  font-size: 0.75rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  padding: 5px 14px;
+  border-radius: 20px;
+}
+.score-display {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.4rem;
+  color: var(--dark);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.score-display small { font-family: 'Nunito', sans-serif; font-size: 0.72rem; font-weight: 700; color: var(--light); text-transform: uppercase; letter-spacing: 1px; }
+
+.progress-bar {
+  background: var(--border);
+  border-radius: 10px;
+  height: 9px;
+  margin-bottom: 22px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  border-radius: 10px;
+  transition: width 0.5s cubic-bezier(.22,.68,0,1.2);
+}
+
+.round-label {
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--light);
+  margin-bottom: 10px;
+}
+
+.prompt {
+  font-size: clamp(1rem, 2.8vw, 1.2rem);
+  font-weight: 800;
+  color: var(--dark);
+  margin-bottom: 20px;
+  line-height: 1.45;
+}
+
+.hint-strip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #FFFBEE;
+  border: 1.5px dashed #FFD93D;
+  border-radius: 10px;
+  padding: 9px 14px;
+  margin-bottom: 20px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #7A5800;
+}
+.hint-strip strong { color: #4A2E00; }
+
+.comparison {
+  display: grid;
+  grid-template-columns: 1fr 56px 1fr;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 24px;
+}
+.cmp-card {
+  background: #F7F9FF;
+  border: 2px solid #E4E9F8;
+  border-radius: 16px;
+  padding: 16px 10px;
+  text-align: center;
+  transition: transform 0.2s;
+}
+.cmp-card:hover { transform: translateY(-2px); }
+.cmp-emoji { font-size: clamp(2.2rem, 7vw, 3.2rem); display: block; margin-bottom: 8px; line-height: 1; }
+.cmp-name { font-size: clamp(0.8rem, 2.2vw, 0.95rem); font-weight: 800; color: var(--dark); line-height: 1.3; }
+.cmp-detail { font-size: 0.76rem; font-weight: 600; color: var(--light); margin-top: 3px; }
+.vs-node {
+  text-align: center;
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.1rem;
+  color: #CCC;
+}
+
+.options { display: flex; flex-direction: column; gap: 11px; }
+
+.opt-btn {
+  font-family: 'Nunito', sans-serif;
+  font-size: clamp(0.92rem, 2.5vw, 1.05rem);
+  font-weight: 800;
+  padding: 14px 18px;
+  border-radius: 14px;
+  border: 2.5px solid #E4E9F8;
+  background: #F7F9FF;
+  color: var(--dark);
+  cursor: pointer;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.16s ease;
+  box-shadow: 0 3px 0 #D4DAF0;
+  position: relative;
+}
+.opt-btn:hover:not(:disabled) {
+  border-color: var(--sky);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 0 rgba(116,185,255,0.5);
+}
+.opt-btn:active:not(:disabled) { transform: translateY(1px); box-shadow: 0 1px 0 #D4DAF0; }
+.opt-btn:disabled { cursor: default; transform: none !important; }
+
+.opt-letter {
+  width: 28px; height: 28px;
+  border-radius: 8px;
+  background: #E4E9F8;
+  color: #8888AA;
+  font-size: 0.75rem;
+  font-weight: 900;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.16s;
+}
+.opt-btn:hover:not(:disabled) .opt-letter { background: var(--sky); color: white; }
+
+.opt-btn.correct {
+  background: #EEFAF2;
+  border-color: #1DD1A1;
+  color: #004D38;
+  box-shadow: 0 4px 0 rgba(29,209,161,0.4);
+  animation: bounceIn 0.4s ease;
+}
+.opt-btn.correct .opt-letter { background: #1DD1A1; color: white; }
+
+.opt-btn.wrong {
+  background: #FFF0F0;
+  border-color: #FF6B6B;
+  color: #7A0000;
+  box-shadow: 0 4px 0 rgba(255,107,107,0.4);
+  animation: shake 0.4s ease;
+}
+.opt-btn.wrong .opt-letter { background: #FF6B6B; color: white; }
+
+.opt-btn.reveal {
+  background: #EEFAF2;
+  border-color: #1DD1A1;
+  color: #004D38;
+}
+.opt-btn.reveal .opt-letter { background: #1DD1A1; color: white; }
+
+.feedback {
+  margin-top: 16px;
+  padding: 14px 18px;
+  border-radius: 14px;
+  font-weight: 800;
+  font-size: 0.98rem;
+  display: none;
+  align-items: flex-start;
+  gap: 12px;
+  animation: fadeIn 0.3s ease;
+}
+.feedback.show { display: flex; }
+.feedback.correct-fb { background: #EEFAF2; border: 2px solid #9EEAAD; color: #004D38; }
+.feedback.wrong-fb   { background: #FFF0F0; border: 2px solid #FFBCBC; color: #7A0000; }
+.fb-icon { font-size: 1.5rem; flex-shrink: 0; margin-top: 1px; }
+.fb-text { line-height: 1.4; }
+.fb-sub  { font-size: 0.84rem; font-weight: 600; opacity: 0.8; margin-top: 3px; }
+
+.next-btn {
+  font-family: 'Nunito', sans-serif;
+  font-weight: 800;
+  font-size: 1.05rem;
+  padding: 15px 28px;
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  margin-top: 16px;
+  transition: all 0.16s;
+}
+.next-btn.show { display: flex; }
+.next-btn:hover { transform: translateY(-2px); }
+.next-btn:active { transform: translateY(2px); }
+
+/* ─── LEVEL COMPLETE SCREEN ─────────────────────────────────── */
+#level-complete { text-align: center; }
+.lc-stars { font-size: 3rem; margin-bottom: 10px; animation: bounceIn 0.5s ease; display: block; }
+.lc-title { font-family: 'Fredoka One', cursive; font-size: 2.2rem; color: var(--dark); margin-bottom: 8px; }
+.lc-sub { font-size: 1rem; font-weight: 700; color: var(--mid); margin-bottom: 24px; }
+
+.stat-row { display: flex; gap: 12px; justify-content: center; margin-bottom: 24px; flex-wrap: wrap; }
+.stat-box {
+  background: var(--border);
+  border-radius: 14px;
+  padding: 14px 22px;
+  min-width: 110px;
+  text-align: center;
+}
+.stat-num { font-family: 'Fredoka One', cursive; font-size: 2rem; line-height: 1.1; }
+.stat-lbl { font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--light); margin-top: 2px; }
+
+.bonus-streak {
+  display: none;
+  background: #FFF8EC;
+  border: 2px solid #FFD93D;
+  border-radius: 12px;
+  padding: 10px 16px;
+  margin-bottom: 18px;
+  font-weight: 800;
+  font-size: 0.92rem;
+  color: #6B3800;
+}
+
+/* ─── FINAL SCREEN ────────────────────────────────────────────── */
+#final { text-align: center; }
+.final-trophy { font-size: 5.5rem; display: block; margin-bottom: 10px; animation: bounceIn 0.7s ease; }
+.final-title { font-family: 'Fredoka One', cursive; font-size: 2.5rem; color: var(--dark); margin-bottom: 8px; }
+.final-sub { font-size: 1.05rem; font-weight: 700; color: var(--mid); margin-bottom: 26px; }
+
+.final-score-big {
+  font-family: 'Fredoka One', cursive;
+  font-size: clamp(3rem, 10vw, 5rem);
+  color: var(--l4);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.final-score-label { font-size: 0.85rem; font-weight: 800; color: var(--light); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 24px; }
+
+.level-recap { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 28px; }
+.recap-box { border-radius: 14px; padding: 14px 10px; }
+.recap-box .recap-lvl { font-size: 0.72rem; font-weight: 900; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 4px; }
+.recap-box .recap-score { font-family: 'Fredoka One', cursive; font-size: 1.6rem; }
+.recap-box .recap-detail { font-size: 0.78rem; font-weight: 700; opacity: 0.75; }
+
+.final-btn-row { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+
+/* ─── Confetti canvas ─────────────────────────────────────────── */
+#confetti-canvas {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: 999;
+}
+
+/* ─── Responsive ──────────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .card { padding: 26px 18px; }
+  .comparison { grid-template-columns: 1fr 40px 1fr; gap: 6px; }
+  .level-preview { grid-template-columns: 1fr; }
+  .level-recap { grid-template-columns: 1fr; }
+  .stat-row { gap: 8px; }
+  .stat-box { min-width: 90px; }
+}
+</style>
+</head>
+<body>
+
+<canvas id="confetti-canvas"></canvas>
+
+<!-- ─── HOME ──────────────────────────────────────────────── -->
+<div id="home" class="screen active">
+  <div class="card">
+    <span class="home-mascot">🗺️</span>
+    <h1 class="home-title">Comparative<br>Adventure!</h1>
+    <p class="home-sub">4 levels · 20+ rounds · English A2</p>
+
+    <div class="level-preview">
+      <div class="level-chip lc1"><span>🟥</span> Level 1 — Short adjectives (-er)</div>
+      <div class="level-chip lc2"><span>🟧</span> Level 2 — Adjectives ending in -y</div>
+      <div class="level-chip lc3"><span>🟩</span> Level 3 — Long adjectives (more/less)</div>
+      <div class="level-chip lc4"><span>🟪</span> Level 4 — Irregular adjectives</div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-start" onclick="startGame()">🚀 Start Game</button>
+      <button class="btn btn-rules" onclick="showScreen('rules')">📖 Rules</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── RULES ──────────────────────────────────────────────── -->
+<div id="rules" class="screen">
+  <div class="card">
+    <h2>📖 Comparative Rules</h2>
+
+    <div class="rule-block rb1">
+      <h3>Level 1 — Short adjectives (1 syllable)</h3>
+      <p>Add <strong>-er</strong> to the end of the adjective.<br>
+      If it ends in consonant + vowel + consonant, double the last letter.</p>
+      <div class="rule-examples">
+        <span class="ex-pill">tall → taller</span>
+        <span class="ex-pill">fast → faster</span>
+        <span class="ex-pill">big → bigger</span>
+        <span class="ex-pill">small → smaller</span>
+        <span class="ex-pill">short → shorter</span>
+        <span class="ex-pill">old → older</span>
+      </div>
+    </div>
+
+    <div class="rule-block rb2">
+      <h3>Level 2 — Adjectives ending in consonant + Y</h3>
+      <p>Drop the <strong>-y</strong> and add <strong>-ier</strong>.</p>
+      <div class="rule-examples">
+        <span class="ex-pill">happy → happier</span>
+        <span class="ex-pill">pretty → prettier</span>
+        <span class="ex-pill">busy → busier</span>
+        <span class="ex-pill">easy → easier</span>
+        <span class="ex-pill">funny → funnier</span>
+        <span class="ex-pill">early → earlier</span>
+      </div>
+    </div>
+
+    <div class="rule-block rb3">
+      <h3>Level 3 — Long adjectives (2+ syllables)</h3>
+      <p>Use <strong>more</strong> or <strong>less</strong> before the adjective. Never add -er!</p>
+      <div class="rule-examples">
+        <span class="ex-pill">more interesting</span>
+        <span class="ex-pill">more expensive</span>
+        <span class="ex-pill">more comfortable</span>
+        <span class="ex-pill">less crowded</span>
+        <span class="ex-pill">less dangerous</span>
+        <span class="ex-pill">more exciting</span>
+      </div>
+    </div>
+
+    <div class="rule-block rb4">
+      <h3>Level 4 — Irregular adjectives</h3>
+      <p>These adjectives have <strong>special forms</strong> — you must memorise them!</p>
+      <div class="rule-examples">
+        <span class="ex-pill">good → better</span>
+        <span class="ex-pill">bad → worse</span>
+        <span class="ex-pill">far → farther</span>
+        <span class="ex-pill">little → less</span>
+        <span class="ex-pill">many → more</span>
+      </div>
+    </div>
+
+    <div class="rules-footer">
+      <button class="btn btn-back" onclick="showScreen('home')">← Back to Home</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── LEVEL INTRO ─────────────────────────────────────────── -->
+<div id="level-intro" class="screen">
+  <div class="card" style="text-align:center">
+    <span class="level-intro-badge" id="li-badge">Level 1</span>
+    <span class="level-intro-icon" id="li-icon">🔴</span>
+    <h2 class="level-intro-title" id="li-title">Short Adjectives</h2>
+    <p class="level-intro-desc" id="li-desc">Description goes here.</p>
+    <div class="level-examples-row" id="li-examples"></div>
+    <button class="btn btn-next" onclick="beginLevel()" id="li-start-btn">Let's Go! →</button>
+  </div>
+</div>
+
+<!-- ─── GAME ───────────────────────────────────────────────── -->
+<div id="game" class="screen">
+  <div class="card">
+    <div class="progress-row">
+      <span class="level-tag" id="game-level-tag">Level 1</span>
+      <div class="score-display">
+        <small>Score</small> <span id="score-num">0</span>
+      </div>
+    </div>
+    <div class="progress-bar">
+      <div class="progress-fill" id="prog-fill" style="width:0%"></div>
+    </div>
+    <div class="round-label" id="round-label">Round 1 of 6</div>
+    <div class="prompt" id="q-prompt"></div>
+    <div class="hint-strip" id="q-hint"></div>
+    <div class="comparison" id="q-comparison"></div>
+    <div class="options" id="q-options"></div>
+    <div class="feedback" id="q-feedback"></div>
+    <button class="next-btn" id="q-next" onclick="nextRound()"></button>
+  </div>
+</div>
+
+<!-- ─── LEVEL COMPLETE ─────────────────────────────────────── -->
+<div id="level-complete" class="screen">
+  <div class="card">
+    <span class="lc-stars" id="lc-stars">⭐⭐⭐</span>
+    <h2 class="lc-title" id="lc-title">Level Complete!</h2>
+    <p class="lc-sub" id="lc-sub">Great work on this level!</p>
+    <div class="stat-row">
+      <div class="stat-box">
+        <div class="stat-num" id="lc-correct" style="color:#1DD1A1">—</div>
+        <div class="stat-lbl">Correct</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num" id="lc-wrong" style="color:#FF6B6B">—</div>
+        <div class="stat-lbl">Wrong</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num" id="lc-pts" style="color:#5F27CD">—</div>
+        <div class="stat-lbl">Points</div>
+      </div>
+    </div>
+    <div class="bonus-streak" id="lc-bonus">🔥 Streak bonus earned!</div>
+    <div style="display:flex;justify-content:center;gap:14px;flex-wrap:wrap">
+      <button class="btn btn-rules" onclick="showScreen('home')">🏠 Home</button>
+      <button class="btn btn-next" id="lc-next-btn" onclick="nextLevel()">Next Level →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── FINAL ──────────────────────────────────────────────── -->
+<div id="final" class="screen">
+  <div class="card">
+    <span class="final-trophy" id="fin-trophy">🏆</span>
+    <h2 class="final-title" id="fin-title">You did it!</h2>
+    <p class="final-sub" id="fin-sub">Congratulations on completing all levels!</p>
+    <div class="final-score-big" id="fin-score">0</div>
+    <div class="final-score-label">Total Points</div>
+    <div class="level-recap" id="fin-recap"></div>
+    <div class="final-btn-row">
+      <button class="btn btn-replay" onclick="startGame()">🔄 Play Again</button>
+      <button class="btn btn-rules" onclick="showScreen('home')">🏠 Home</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ──────────────────────────────────────────────────────────────
+   DATA
+────────────────────────────────────────────────────────────── */
+const LEVELS = [
+  {
+    id: 1,
+    name: "Short Adjectives",
+    subtitle: "Add -er",
+    icon: "📏",
+    color: "var(--l1)",
+    colorD: "var(--l1d)",
+    colorBg: "var(--l1bg)",
+    colorT: "var(--l1t)",
+    cls: "rb1",
+    lcls: "lc1",
+    badgeLabel: "Level 1",
+    desc: "Short adjectives (usually 1 syllable) get <strong>-er</strong> at the end.<br>If it ends consonant+vowel+consonant, double the last letter!",
+    examples: ["tall → taller","fast → faster","big → bigger","old → older","short → shorter"],
+    questions: [
+      {
+        prompt: "Look at these two animals. Which sentence is correct?",
+        hint: "big → bigger (CVC rule: double the g!)",
+        items: [
+          { emoji:"🐘", name:"An elephant", detail:"~6,000 kg" },
+          { emoji:"🐇", name:"A rabbit", detail:"~2 kg" }
+        ],
+        options: [
+          { text:"A rabbit is bigger than an elephant.", correct:false },
+          { text:"An elephant is bigger than a rabbit.", correct:true }
+        ],
+        explanation:"Elephants weigh up to 6,000 kg — much bigger than rabbits!"
+      },
+      {
+        prompt: "Which sentence correctly compares these two buildings?",
+        hint: "tall → taller (just add -er!)",
+        items: [
+          { emoji:"🏢", name:"A skyscraper", detail:"~300 metres" },
+          { emoji:"🏠", name:"A house", detail:"~8 metres" }
+        ],
+        options: [
+          { text:"A house is taller than a skyscraper.", correct:false },
+          { text:"A skyscraper is taller than a house.", correct:true }
+        ],
+        explanation:"Skyscrapers can reach 300+ metres — much taller than a house!"
+      },
+      {
+        prompt: "Which sentence correctly compares these two vehicles?",
+        hint: "fast → faster (just add -er!)",
+        items: [
+          { emoji:"🚗", name:"A car", detail:"~120 km/h" },
+          { emoji:"🚲", name:"A bicycle", detail:"~25 km/h" }
+        ],
+        options: [
+          { text:"A car is faster than a bicycle.", correct:true },
+          { text:"A bicycle is faster than a car.", correct:false }
+        ],
+        explanation:"A car travels at 120 km/h — much faster than a bicycle!"
+      },
+      {
+        prompt: "Compare these two animals. Which sentence is correct?",
+        hint: "slow → slower (just add -er!)",
+        items: [
+          { emoji:"🐌", name:"A snail", detail:"~0.05 km/h" },
+          { emoji:"🐆", name:"A cheetah", detail:"~120 km/h" }
+        ],
+        options: [
+          { text:"A cheetah is slower than a snail.", correct:false },
+          { text:"A snail is slower than a cheetah.", correct:true }
+        ],
+        explanation:"A snail moves at 0.05 km/h — much slower than a cheetah!"
+      },
+      {
+        prompt: "Which sentence compares these two correctly?",
+        hint: "small → smaller (just add -er!)",
+        items: [
+          { emoji:"🌏", name:"The Earth", detail:"diameter: 12,742 km" },
+          { emoji:"🍬", name:"A sweet", detail:"diameter: ~2 cm" }
+        ],
+        options: [
+          { text:"The Earth is smaller than a sweet.", correct:false },
+          { text:"A sweet is smaller than the Earth.", correct:true }
+        ],
+        explanation:"The Earth is 12,742 km wide — a sweet is much smaller!"
+      },
+      {
+        prompt: "Which sentence correctly describes these two people?",
+        hint: "old → older (just add -er!)",
+        items: [
+          { emoji:"👴", name:"Grandpa Leo", detail:"78 years old" },
+          { emoji:"👶", name:"Baby Mia", detail:"1 year old" }
+        ],
+        options: [
+          { text:"Baby Mia is older than Grandpa Leo.", correct:false },
+          { text:"Grandpa Leo is older than Baby Mia.", correct:true }
+        ],
+        explanation:"Leo is 78 and Mia is 1 — Leo is much older!"
+      }
+    ]
+  },
+  {
+    id: 2,
+    name: "Adjectives Ending in -Y",
+    subtitle: "Drop Y, add -ier",
+    icon: "😊",
+    color: "var(--l2)",
+    colorD: "var(--l2d)",
+    colorBg: "var(--l2bg)",
+    colorT: "var(--l2t)",
+    cls: "rb2",
+    lcls: "lc2",
+    badgeLabel: "Level 2",
+    desc: "Adjectives ending in consonant + <strong>y</strong>: drop the <strong>y</strong> and add <strong>-ier</strong>.<br>Example: happy → happ<strong>ier</strong>",
+    examples: ["happy → happier","pretty → prettier","busy → busier","easy → easier","funny → funnier"],
+    questions: [
+      {
+        prompt: "Look at these two people. Which sentence is correct?",
+        hint: "happy → happier (drop y, add -ier)",
+        items: [
+          { emoji:"😁", name:"Maria", detail:"Just won a prize!" },
+          { emoji:"😐", name:"Tom", detail:"Normal Tuesday." }
+        ],
+        options: [
+          { text:"Tom is happier than Maria.", correct:false },
+          { text:"Maria is happier than Tom.", correct:true }
+        ],
+        explanation:"Maria just won a prize — she is much happier than Tom today!"
+      },
+      {
+        prompt: "Which sentence correctly compares these two things?",
+        hint: "pretty → prettier (drop y, add -ier)",
+        items: [
+          { emoji:"🌹", name:"A rose", detail:"colourful & fragrant" },
+          { emoji:"🌿", name:"A dry branch", detail:"plain & dull" }
+        ],
+        options: [
+          { text:"A rose is prettier than a dry branch.", correct:true },
+          { text:"A dry branch is prettier than a rose.", correct:false }
+        ],
+        explanation:"A rose is colourful and fragrant — much prettier than a dry branch!"
+      },
+      {
+        prompt: "Which sentence correctly compares these two people?",
+        hint: "busy → busier (drop y, add -ier)",
+        items: [
+          { emoji:"👩‍⚕️", name:"Dr. Silva", detail:"12-hour shifts, on-call" },
+          { emoji:"🧑‍🎓", name:"A student", detail:"3 classes today" }
+        ],
+        options: [
+          { text:"A student is busier than Dr. Silva.", correct:false },
+          { text:"Dr. Silva is busier than a student.", correct:true }
+        ],
+        explanation:"Dr. Silva works 12-hour shifts — much busier than a student!"
+      },
+      {
+        prompt: "Which sentence correctly compares these two activities?",
+        hint: "easy → easier (drop y, add -ier)",
+        items: [
+          { emoji:"🎯", name:"Throwing darts", detail:"lots of practice needed!" },
+          { emoji:"💧", name:"Drinking water", detail:"everyone can do it!" }
+        ],
+        options: [
+          { text:"Drinking water is easier than throwing darts.", correct:true },
+          { text:"Throwing darts is easier than drinking water.", correct:false }
+        ],
+        explanation:"Drinking water needs no practice — much easier than throwing darts!"
+      },
+      {
+        prompt: "Which sentence correctly compares these two performers?",
+        hint: "funny → funnier (drop y, add -ier)",
+        items: [
+          { emoji:"🤡", name:"A professional clown", detail:"jokes, tricks & laughs!" },
+          { emoji:"🪨", name:"A boring rock", detail:"completely silent." }
+        ],
+        options: [
+          { text:"A boring rock is funnier than a clown.", correct:false },
+          { text:"A clown is funnier than a boring rock.", correct:true }
+        ],
+        explanation:"A professional clown tells jokes and tricks — much funnier than a rock!"
+      },
+      {
+        prompt: "Which sentence correctly compares these two events?",
+        hint: "early → earlier (drop y, add -ier)",
+        items: [
+          { emoji:"🌅", name:"Sunrise", detail:"5:30 AM in summer" },
+          { emoji:"🌙", name:"Midnight", detail:"12:00 AM" }
+        ],
+        options: [
+          { text:"Midnight is earlier than sunrise.", correct:false },
+          { text:"Sunrise is earlier than midnight.", correct:true }
+        ],
+        explanation:"Sunrise at 5:30 AM happens before midnight — it is earlier!"
+      }
+    ]
+  },
+  {
+    id: 3,
+    name: "Long Adjectives",
+    subtitle: "more / less + adjective",
+    icon: "📊",
+    color: "var(--l3)",
+    colorD: "var(--l3d)",
+    colorBg: "var(--l3bg)",
+    colorT: "var(--l3t)",
+    cls: "rb3",
+    lcls: "lc3",
+    badgeLabel: "Level 3",
+    desc: "Long adjectives (2+ syllables) use <strong>more</strong> or <strong>less</strong>.<br>Never add <em>-er</em> to these adjectives!",
+    examples: ["more interesting","more expensive","more comfortable","less crowded","less dangerous","more exciting"],
+    questions: [
+      {
+        prompt: "Which sentence correctly compares these two items?",
+        hint: "expensive = 3 syllables → use MORE expensive",
+        items: [
+          { emoji:"💎", name:"A diamond ring", detail:"costs ~$5,000" },
+          { emoji:"🍎", name:"An apple", detail:"costs ~$1" }
+        ],
+        options: [
+          { text:"An apple is more expensive than a diamond ring.", correct:false },
+          { text:"A diamond ring is more expensive than an apple.", correct:true }
+        ],
+        explanation:"A diamond ring at $5,000 is much more expensive than an apple at $1!"
+      },
+      {
+        prompt: "Which sentence correctly compares these two places to sleep?",
+        hint: "comfortable = 4 syllables → use MORE comfortable",
+        items: [
+          { emoji:"🛏️", name:"A soft bed", detail:"cosy & warm" },
+          { emoji:"🪑", name:"A hard chair", detail:"stiff & uncomfortable" }
+        ],
+        options: [
+          { text:"A soft bed is more comfortable than a hard chair.", correct:true },
+          { text:"A hard chair is more comfortable than a soft bed.", correct:false }
+        ],
+        explanation:"A soft bed is designed for sleeping — much more comfortable than a chair!"
+      },
+      {
+        prompt: "Which sentence correctly compares these two activities?",
+        hint: "interesting = 4 syllables → use MORE interesting",
+        items: [
+          { emoji:"🎮", name:"Playing video games", detail:"fun & exciting!" },
+          { emoji:"📝", name:"Copying notes", detail:"slow & repetitive." }
+        ],
+        options: [
+          { text:"Copying notes is more interesting than video games.", correct:false },
+          { text:"Playing video games is more interesting than copying notes.", correct:true }
+        ],
+        explanation:"Most people find video games more interesting than copying notes!"
+      },
+      {
+        prompt: "Which sentence correctly compares these two places?",
+        hint: "crowded = 2 syllables → use LESS crowded",
+        items: [
+          { emoji:"🏡", name:"A small village", detail:"quiet & peaceful" },
+          { emoji:"🌆", name:"A city centre", detail:"millions of people!" }
+        ],
+        options: [
+          { text:"A city centre is less crowded than a village.", correct:false },
+          { text:"A small village is less crowded than a city centre.", correct:true }
+        ],
+        explanation:"Villages have far fewer people — much less crowded than city centres!"
+      },
+      {
+        prompt: "Which sentence correctly compares these two activities?",
+        hint: "dangerous = 3 syllables → use LESS dangerous",
+        items: [
+          { emoji:"🧘", name:"Yoga at home", detail:"calm & safe" },
+          { emoji:"🦈", name:"Swimming with sharks", detail:"very risky!" }
+        ],
+        options: [
+          { text:"Swimming with sharks is less dangerous than yoga.", correct:false },
+          { text:"Yoga at home is less dangerous than swimming with sharks.", correct:true }
+        ],
+        explanation:"Yoga is calm and safe — much less dangerous than swimming with sharks!"
+      },
+      {
+        prompt: "Which sentence correctly compares these two sports?",
+        hint: "exciting = 3 syllables → use MORE exciting",
+        items: [
+          { emoji:"🏎️", name:"Formula 1 racing", detail:"300 km/h, crashes, drama!" },
+          { emoji:"♟️", name:"Watching paint dry", detail:"no movement at all." }
+        ],
+        options: [
+          { text:"Formula 1 is more exciting than watching paint dry.", correct:true },
+          { text:"Watching paint dry is more exciting than Formula 1.", correct:false }
+        ],
+        explanation:"F1 racing at 300 km/h is much more exciting than watching paint dry!"
+      }
+    ]
+  },
+  {
+    id: 4,
+    name: "Irregular Adjectives",
+    subtitle: "Special forms",
+    icon: "⚡",
+    color: "var(--l4)",
+    colorD: "var(--l4d)",
+    colorBg: "var(--l4bg)",
+    colorT: "var(--l4t)",
+    cls: "rb4",
+    lcls: "lc4",
+    badgeLabel: "Level 4",
+    desc: "These adjectives have <strong>completely different</strong> comparative forms.<br>You must memorise them — no rules apply!",
+    examples: ["good → better","bad → worse","far → farther","little → less","many → more"],
+    questions: [
+      {
+        prompt: "Which sentence correctly compares these two meals?",
+        hint: "good → better (irregular — no -er or more!)",
+        items: [
+          { emoji:"🍕", name:"Fresh homemade pizza", detail:"hot, tasty & full of flavour" },
+          { emoji:"🍞", name:"Stale old bread", detail:"hard, dry & tasteless" }
+        ],
+        options: [
+          { text:"Stale old bread is better than fresh pizza.", correct:false },
+          { text:"Fresh pizza is better than stale old bread.", correct:true }
+        ],
+        explanation:"Fresh homemade pizza is much better than stale old bread — good → better!"
+      },
+      {
+        prompt: "Which sentence correctly compares these two weather days?",
+        hint: "bad → worse (irregular — never 'more bad' or 'badder'!)",
+        items: [
+          { emoji:"⛈️", name:"A stormy day", detail:"thunder, lightning, flooding!" },
+          { emoji:"🌤️", name:"A cloudy day", detail:"a bit grey, but fine." }
+        ],
+        options: [
+          { text:"A cloudy day is worse than a stormy day.", correct:false },
+          { text:"A stormy day is worse than a cloudy day.", correct:true }
+        ],
+        explanation:"A stormy day with thunder and flooding is much worse than a cloudy day!"
+      },
+      {
+        prompt: "Which sentence correctly compares these two distances?",
+        hint: "far → farther (irregular — never 'more far' or 'farer'!)",
+        items: [
+          { emoji:"🏠", name:"Home", detail:"2 km from school" },
+          { emoji:"🏟️", name:"The stadium", detail:"15 km from school" }
+        ],
+        options: [
+          { text:"Home is farther from school than the stadium.", correct:false },
+          { text:"The stadium is farther from school than home.", correct:true }
+        ],
+        explanation:"The stadium is 15 km from school — farther than home at just 2 km!"
+      },
+      {
+        prompt: "Which sentence correctly compares these two test results?",
+        hint: "bad → worse (irregular form — never 'more bad'!)",
+        items: [
+          { emoji:"📊", name:"Ana's result", detail:"25% — failed" },
+          { emoji:"📈", name:"Ben's result", detail:"80% — passed!" }
+        ],
+        options: [
+          { text:"Ben's result is worse than Ana's.", correct:false },
+          { text:"Ana's result is worse than Ben's.", correct:true }
+        ],
+        explanation:"Ana scored 25% and Ben scored 80% — Ana's result is worse!"
+      },
+      {
+        prompt: "Which sentence correctly compares these two restaurants?",
+        hint: "good → better (irregular — never 'gooder' or 'more good'!)",
+        items: [
+          { emoji:"⭐⭐⭐⭐⭐", name:"Le Gourmet", detail:"5 stars, world-famous chef" },
+          { emoji:"😐", name:"Café Meh", detail:"2 stars, average food" }
+        ],
+        options: [
+          { text:"Café Meh is better than Le Gourmet.", correct:false },
+          { text:"Le Gourmet is better than Café Meh.", correct:true }
+        ],
+        explanation:"5-star Le Gourmet with a world-famous chef is much better than Café Meh!"
+      },
+      {
+        prompt: "Which sentence correctly compares these two journeys?",
+        hint: "far → farther (irregular — never 'farer' or 'more far'!)",
+        items: [
+          { emoji:"🚶", name:"Walk to the bus stop", detail:"200 metres away" },
+          { emoji:"✈️", name:"Flight to Japan", detail:"18,000 km away" }
+        ],
+        options: [
+          { text:"The walk to the bus stop is farther than Japan.", correct:false },
+          { text:"The flight to Japan is farther than the bus stop.", correct:true }
+        ],
+        explanation:"Japan is 18,000 km away — much farther than the bus stop at 200 metres!"
+      }
+    ]
+  }
+];
+
+const PRAISES = [
+  "Correct! Well done! 🎉",
+  "That's right! Excellent! ⭐",
+  "Amazing! You're a grammar star! 🌟",
+  "Perfect answer! Keep it up! 🚀",
+  "Brilliant! Great job! 🏆",
+  "Yes! Spot on! 🎯",
+  "Outstanding! 👏",
+  "Fantastic! You got it! 💪"
+];
+
+/* ──────────────────────────────────────────────────────────────
+   STATE
+────────────────────────────────────────────────────────────── */
+let totalScore = 0;
+let currentLevel = 0;
+let currentRound = 0;
+let answered = false;
+let levelScores = [0,0,0,0];
+let levelCorrect = [0,0,0,0];
+let levelWrong = [0,0,0,0];
+let streak = 0;
+let maxStreak = 0;
+
+/* ──────────────────────────────────────────────────────────────
+   HELPERS
+────────────────────────────────────────────────────────────── */
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const el = document.getElementById(id);
+  el.classList.add('active');
+  el.style.animation = 'none';
+  requestAnimationFrame(() => { el.style.animation = ''; });
+}
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length-1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i+1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function rand(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+/* ──────────────────────────────────────────────────────────────
+   GAME FLOW
+────────────────────────────────────────────────────────────── */
+function startGame() {
+  totalScore = 0;
+  currentLevel = 0;
+  streak = 0;
+  maxStreak = 0;
+  levelScores  = [0,0,0,0];
+  levelCorrect = [0,0,0,0];
+  levelWrong   = [0,0,0,0];
+  showLevelIntro();
+}
+
+function showLevelIntro() {
+  const lv = LEVELS[currentLevel];
+  currentRound = 0;
+
+  document.getElementById('li-badge').textContent = lv.badgeLabel;
+  document.getElementById('li-badge').style.background = lv.colorBg;
+  document.getElementById('li-badge').style.color = lv.colorT;
+  document.getElementById('li-icon').textContent = lv.icon;
+  document.getElementById('li-title').textContent = lv.name;
+  document.getElementById('li-desc').innerHTML = lv.desc;
+
+  const exRow = document.getElementById('li-examples');
+  exRow.innerHTML = lv.examples.map(e =>
+    `<span class="level-ex-tag" style="background:${lv.colorBg};color:${lv.colorT}">${e}</span>`
+  ).join('');
+
+  const startBtn = document.getElementById('li-start-btn');
+  startBtn.style.background = lv.color;
+  startBtn.style.boxShadow = `0 6px 0 ${lv.colorD}`;
+
+  showScreen('level-intro');
+}
+
+function beginLevel() {
+  renderRound();
+  showScreen('game');
+}
+
+function renderRound() {
+  answered = false;
+  const lv = LEVELS[currentLevel];
+  const q  = lv.questions[currentRound];
+  const opts = shuffle(q.options);
+
+  // Header
+  const tag = document.getElementById('game-level-tag');
+  tag.textContent = lv.badgeLabel + ' · ' + lv.name;
+  tag.style.background = lv.colorBg;
+  tag.style.color = lv.colorT;
+
+  document.getElementById('score-num').textContent = totalScore;
+
+  // Progress
+  const total = lv.questions.length;
+  document.getElementById('round-label').textContent = `Round ${currentRound+1} of ${total}`;
+  document.getElementById('prog-fill').style.width = ((currentRound / total) * 100) + '%';
+  document.getElementById('prog-fill').style.background = lv.color;
+
+  // Prompt & hint
+  document.getElementById('q-prompt').textContent = q.prompt;
+  document.getElementById('q-hint').innerHTML = `💡 <strong>Grammar tip:</strong> ${q.hint}`;
+
+  // Items
+  document.getElementById('q-comparison').innerHTML = `
+    <div class="cmp-card">
+      <span class="cmp-emoji">${q.items[0].emoji}</span>
+      <div class="cmp-name">${q.items[0].name}</div>
+      <div class="cmp-detail">${q.items[0].detail}</div>
+    </div>
+    <div class="vs-node">VS</div>
+    <div class="cmp-card">
+      <span class="cmp-emoji">${q.items[1].emoji}</span>
+      <div class="cmp-name">${q.items[1].name}</div>
+      <div class="cmp-detail">${q.items[1].detail}</div>
+    </div>
+  `;
+
+  // Options
+  document.getElementById('q-options').innerHTML = opts.map((opt, i) => `
+    <button class="opt-btn" onclick="choose(this, ${opt.correct})" data-correct="${opt.correct}">
+      <span class="opt-letter">${String.fromCharCode(65+i)}</span>
+      ${opt.text}
+    </button>
+  `).join('');
+
+  // Clear feedback & next btn
+  const fb = document.getElementById('q-feedback');
+  fb.className = 'feedback';
+  fb.innerHTML = '';
+
+  const nb = document.getElementById('q-next');
+  nb.className = 'next-btn';
+  nb.style.background = lv.color;
+  nb.style.boxShadow = `0 5px 0 ${lv.colorD}`;
+  const isLast = currentRound === lv.questions.length - 1;
+  nb.textContent = isLast
+    ? (currentLevel === LEVELS.length - 1 ? '🏁 See Final Results' : '🏅 Level Complete')
+    : 'Next Question →';
+}
+
+function choose(btn, isCorrect) {
+  if (answered) return;
+  answered = true;
+
+  const q  = LEVELS[currentLevel].questions[currentRound];
+  const lv = LEVELS[currentLevel];
+  const allBtns = document.querySelectorAll('.opt-btn');
+  allBtns.forEach(b => b.disabled = true);
+
+  const fb = document.getElementById('q-feedback');
+  const nb = document.getElementById('q-next');
+
+  if (isCorrect) {
+    btn.classList.add('correct');
+    streak++;
+    maxStreak = Math.max(maxStreak, streak);
+    const pts = streak >= 3 ? 15 : 10;
+    totalScore += pts;
+    levelScores[currentLevel] += pts;
+    levelCorrect[currentLevel]++;
+    document.getElementById('score-num').textContent = totalScore;
+
+    fb.className = 'feedback show correct-fb';
+    fb.innerHTML = `
+      <span class="fb-icon">✅</span>
+      <div class="fb-text">
+        <strong>${rand(PRAISES)}</strong>
+        <div class="fb-sub">${q.explanation}</div>
+        ${streak >= 3 ? '<div class="fb-sub" style="color:#0F6E56">🔥 Streak bonus! +15 pts</div>' : ''}
+      </div>
+    `;
+  } else {
+    btn.classList.add('wrong');
+    streak = 0;
+    levelWrong[currentLevel]++;
+    allBtns.forEach(b => { if (b.dataset.correct === 'true') b.classList.add('reveal'); });
+
+    fb.className = 'feedback show wrong-fb';
+    fb.innerHTML = `
+      <span class="fb-icon">❌</span>
+      <div class="fb-text">
+        <strong>Not quite! The correct answer is highlighted in green.</strong>
+        <div class="fb-sub">${q.explanation}</div>
+      </div>
+    `;
+  }
+
+  nb.classList.add('show');
+}
+
+function nextRound() {
+  const lv = LEVELS[currentLevel];
+  currentRound++;
+  if (currentRound >= lv.questions.length) {
+    showLevelComplete();
+  } else {
+    renderRound();
+  }
+}
+
+function showLevelComplete() {
+  const lv  = LEVELS[currentLevel];
+  const cor = levelCorrect[currentLevel];
+  const wrg = levelWrong[currentLevel];
+  const pts = levelScores[currentLevel];
+  const tot = lv.questions.length;
+  const pct = Math.round((cor / tot) * 100);
+
+  let stars, title, sub;
+  if (pct === 100) { stars = '⭐⭐⭐'; title = 'Perfect Level!'; sub = 'You answered every question correctly!'; }
+  else if (pct >= 70) { stars = '⭐⭐'; title = 'Level Complete!'; sub = 'Great work! Keep going!'; }
+  else { stars = '⭐'; title = 'Level Done!'; sub = 'Good effort! Review the rules and try again next time.'; }
+
+  document.getElementById('lc-stars').textContent = stars;
+  document.getElementById('lc-title').textContent = title;
+  document.getElementById('lc-sub').textContent = sub;
+  document.getElementById('lc-correct').textContent = cor;
+  document.getElementById('lc-wrong').textContent = wrg;
+  document.getElementById('lc-pts').textContent = pts;
+
+  const bonusEl = document.getElementById('lc-bonus');
+  if (maxStreak >= 3) {
+    bonusEl.style.display = 'block';
+    bonusEl.textContent = `🔥 Best streak: ${maxStreak} in a row! Bonus points earned!`;
+  } else {
+    bonusEl.style.display = 'none';
+  }
+
+  const nextBtn = document.getElementById('lc-next-btn');
+  const isLast = currentLevel === LEVELS.length - 1;
+  if (isLast) {
+    nextBtn.textContent = '🏁 See Final Results';
+  } else {
+    nextBtn.textContent = `Next: Level ${currentLevel + 2} →`;
+  }
+  nextBtn.style.background = LEVELS[Math.min(currentLevel+1, LEVELS.length-1)].color;
+  nextBtn.style.boxShadow = `0 6px 0 ${LEVELS[Math.min(currentLevel+1, LEVELS.length-1)].colorD}`;
+
+  if (pct === 100) launchConfetti();
+  showScreen('level-complete');
+}
+
+function nextLevel() {
+  currentLevel++;
+  if (currentLevel >= LEVELS.length) {
+    showFinal();
+  } else {
+    showLevelIntro();
+  }
+}
+
+function showFinal() {
+  const pct = Math.round((totalScore / (LEVELS.length * 10 * 6)) * 100);
+  let trophy, title, sub;
+  if (pct >= 90) { trophy = '🏆'; title = 'Grammar Champion!'; sub = 'You mastered all comparative forms. Incredible!'; }
+  else if (pct >= 70) { trophy = '🥇'; title = 'Excellent Work!'; sub = 'You really know your comparatives! Keep it up!'; }
+  else if (pct >= 50) { trophy = '🥈'; title = 'Good Job!'; sub = 'You did well! Review the rules and try to improve!'; }
+  else { trophy = '📚'; title = 'Keep Practising!'; sub = 'Every expert was once a beginner. Try again!'; }
+
+  document.getElementById('fin-trophy').textContent = trophy;
+  document.getElementById('fin-title').textContent = title;
+  document.getElementById('fin-sub').textContent = sub;
+  document.getElementById('fin-score').textContent = totalScore;
+
+  const recap = document.getElementById('fin-recap');
+  recap.innerHTML = LEVELS.map((lv, i) => {
+    const cor = levelCorrect[i];
+    const tot = lv.questions.length;
+    return `
+      <div class="recap-box" style="background:${lv.colorBg}">
+        <div class="recap-lvl" style="color:${lv.colorT}">${lv.badgeLabel}</div>
+        <div class="recap-score" style="color:${lv.colorT}">${levelScores[i]} pts</div>
+        <div class="recap-detail" style="color:${lv.colorT}">${cor}/${tot} correct · ${lv.name}</div>
+      </div>
+    `;
+  }).join('');
+
+  launchConfetti();
+  showScreen('final');
+}
+
+/* ──────────────────────────────────────────────────────────────
+   CONFETTI
+────────────────────────────────────────────────────────────── */
+function launchConfetti() {
+  const canvas = document.getElementById('confetti-canvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  const colors = ['#FF6B6B','#FF9F43','#1DD1A1','#5F27CD','#74B9FF','#FFD93D','#FF78C4'];
+  const pieces = Array.from({length: 120}, () => ({
+    x: Math.random() * canvas.width,
+    y: Math.random() * canvas.height - canvas.height,
+    r: Math.random() * 8 + 4,
+    d: Math.random() * 120 + 80,
+    color: colors[Math.floor(Math.random() * colors.length)],
+    tilt: Math.random() * 10 - 10,
+    tiltAngle: 0,
+    tiltSpeed: Math.random() * 0.1 + 0.05,
+    speed: Math.random() * 3 + 2
+  }));
+
+  let frame = 0;
+  const MAX = 180;
+
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    pieces.forEach(p => {
+      p.y += p.speed;
+      p.tiltAngle += p.tiltSpeed;
+      p.tilt = Math.sin(p.tiltAngle) * 15;
+      ctx.beginPath();
+      ctx.lineWidth = p.r;
+      ctx.strokeStyle = p.color;
+      ctx.moveTo(p.x + p.tilt + p.r/4, p.y);
+      ctx.lineTo(p.x + p.tilt, p.y + p.tilt + p.r/4);
+      ctx.stroke();
+    });
+    frame++;
+    if (frame < MAX) requestAnimationFrame(draw);
+    else ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
+  draw();
+}
+</script>
+</body>
+</html>
